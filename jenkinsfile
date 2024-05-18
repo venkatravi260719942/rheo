@@ -23,6 +23,8 @@ pipeline {
                     sh 'rm -rf ${VENV_DIR}'
                     // Create virtual environment
                     sh 'python3 -m venv ${VENV_DIR}'
+                    // Verify virtual environment creation
+                    sh 'ls ${VENV_DIR}'
                     // Activate virtual environment and install dependencies using bash
                     sh '''
                         #!/bin/bash
@@ -61,6 +63,7 @@ pipeline {
                 script {
                     // Log in to AWS ECR and push the image
                     sh '''
+                        #!/bin/bash
                         aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin 211125528700.dkr.ecr.us-west-2.amazonaws.com
                         docker push ${DOCKER_IMAGE}
                     '''
@@ -74,6 +77,7 @@ pipeline {
                     // Assuming deployment involves running a Docker container
                     // Customize deployment commands as per your infrastructure
                     sh '''
+                        #!/bin/bash
                         docker run -d -p 80:5000 ${DOCKER_IMAGE}
                     '''
                 }
