@@ -34,11 +34,18 @@ pipeline {
                 script {
                     // Log in to the Docker registry on the target VM
                     sshagent(credentials: [SSH_CREDENTIALS_ID]) {
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${TARGET_VM_HOST} 'aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 211125528700.dkr.ecr.us-west-2.amazonaws.com'"
+                        sh """
+                            ssh -o StrictHostKeyChecking=no ubuntu@${TARGET_VM_HOST} 'aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 211125528700.dkr.ecr.us-west-2.amazonaws.com'
+                        """
                     }
                     // Pull the Docker image on the target VM and run it
                     sshagent(credentials: [SSH_CREDENTIALS_ID]) {
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${TARGET_VM_HOST} 'docker pull ${DOCKER_IMAGE} && docker run -d -p 80:5000 ${DOCKER_IMAGE}'"
+                        sh """
+                            ssh -o StrictHostKeyChecking=no ubuntu@${TARGET_VM_HOST} '
+                                docker pull ${DOCKER_IMAGE}
+                                docker run -d -p 80:5000 ${DOCKER_IMAGE}
+                            '
+                        """
                     }
                 }
             }
