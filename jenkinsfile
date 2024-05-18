@@ -4,6 +4,7 @@ pipeline {
     }
 
     environment {
+        VENV_DIR = 'venv'
         DOCKER_IMAGE = '211125528700.dkr.ecr.us-west-2.amazonaws.com/your-flask-app:latest'
         AWS_REGION = 'us-west-2'
     }
@@ -11,17 +12,23 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git credentialsId: 'github', url: 'https://github.com/ishaileshmishra/todo-api-flask.git'
+                git credentialsId: 'github', url: 'https://github.com/venkatravi260719942/rheo'
             }
         }
 
-        stage('Install Python Dependencies') {
+        stage('Setup Python Environment') {
             steps {
                 script {
-                    // Ensure pip is up to date
-                    sh 'pip install --upgrade pip'
-                    // Install Python dependencies globally
-                    sh 'pip install -r requirements.txt'
+                    // Ensure the venv directory does not already exist
+                    sh 'rm -rf ${VENV_DIR}'
+                    // Create virtual environment
+                    sh 'python3 -m venv ${VENV_DIR}'
+                    // Activate virtual environment and install dependencies
+                    sh '''
+                        source ${VENV_DIR}/bin/activate
+                        pip install --upgrade pip
+                        pip install -r requirements.txt
+                    '''
                 }
             }
         }
@@ -29,8 +36,11 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    // Run tests using pytest
-                    sh 'pytest'
+                    // Activate virtual environment and run tests
+                    sh '''
+                        source ${VENV_DIR}/bin/activate
+                        pytest
+                    '''
                 }
             }
         }
@@ -71,8 +81,9 @@ pipeline {
 
     post {
         always {
-            // Clean up Docker images after the build
+            // Clean up virtual environment and Docker images after the build
             script {
+                sh 'rm -rf ${VENV_DIR}'
                 sh 'docker rmi ${DOCKER_IMAGE}'
             }
         }
