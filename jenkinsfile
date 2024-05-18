@@ -4,6 +4,8 @@ pipeline {
     environment {
         DOCKER_IMAGE = '211125528700.dkr.ecr.us-west-2.amazonaws.com/rheo-flask-app:latest'
         REGISTRY_URL = '211125528700.dkr.ecr.us-west-2.amazonaws.com/rheo-flask-app'
+        TARGET_VM_HOST = '35.165.99.46'
+        SSH_CREDENTIALS_ID = 'targetvm' // Replace with your Jenkins SSH credentials ID
     }
 
     stages {
@@ -23,6 +25,21 @@ pipeline {
                     sh "aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 211125528700.dkr.ecr.us-west-2.amazonaws.com"
                     // Push the Docker image to the registry
                     sh "docker push ${DOCKER_IMAGE}"
+                }
+            }
+        }
+
+        stage('Deploy to Target VM') {
+            steps {
+                script {
+                    // Log in to the Docker registry on the target VM
+                    sshagent(credentials: [SSH_CREDENTIALS_ID]) {
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${TARGET_VM_HOST} 'aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 211125528700.dkr.ecr.us-west-2.amazonaws.com'"
+                    }
+                    // Pull the Docker image on the target VM and run it
+                    sshagent(credentials: [SSH_CREDENTIALS_ID]) {
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${TARGET_VM_HOST} 'docker pull ${DOCKER_IMAGE} && docker run -d -p 80:5000 ${DOCKER_IMAGE}'"
+                    }
                 }
             }
         }
