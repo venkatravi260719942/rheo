@@ -9,7 +9,8 @@ COPY . /app
 
 # Install any needed dependencies specified in requirements.txt
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install -r requirements.txt && \
+    pip install pytest
 
 # Define environment variable
 ENV AWS_REGION=us-west-2
