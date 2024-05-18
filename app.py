@@ -1,6 +1,5 @@
 #!flask/bin/python
 from flask import Flask, jsonify, abort, make_response, request
-from pip._vendor.appdirs import unicode
 
 app = Flask(__name__)
 
@@ -61,9 +60,9 @@ def update_task(task_id):
         abort(404)
     if not request.json:
         abort(400)
-    if 'title' in request.json and type(request.json['title']) != unicode:
+    if 'title' in request.json and type(request.json['title']) != str:
         abort(400)
-    if 'description' in request.json and type(request.json['description']) is not unicode:
+    if 'description' in request.json and type(request.json['description']) is not str:
         abort(400)
     if 'done' in request.json and type(request.json['done']) is not bool:
         abort(400)
