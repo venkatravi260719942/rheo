@@ -1,10 +1,12 @@
 pipeline {
     agent {
-        label 'Jenkins-slave'
+        dockerfile {
+            filename 'Dockerfile'
+            dir '.'
+        }
     }
 
     environment {
-        VENV_DIR = 'venv'
         DOCKER_IMAGE = '211125528700.dkr.ecr.us-west-2.amazonaws.com/your-flask-app:latest'
         AWS_REGION = 'us-west-2'
     }
@@ -16,35 +18,11 @@ pipeline {
             }
         }
 
-        stage('Setup Python Environment') {
-            steps {
-                script {
-                    // Ensure the venv directory does not already exist
-                    sh "rm -rf ${VENV_DIR}"
-                    // Create virtual environment
-                    sh "python3 -m venv ${VENV_DIR}"
-                    // Verify virtual environment creation
-                    sh "ls ${VENV_DIR}"
-                    // Activate virtual environment and install dependencies using bash
-                    sh """
-                        #!/bin/bash
-                        source ${VENV_DIR}/bin/activate
-                        pip install --upgrade pip
-                        pip install -r requirements.txt
-                    """
-                }
-            }
-        }
-
         stage('Run Tests') {
             steps {
                 script {
-                    // Activate virtual environment and run tests using bash
-                    sh """
-                        #!/bin/bash
-                        source ${VENV_DIR}/bin/activate
-                        pytest
-                    """
+                    // Run tests using pytest or your preferred testing framework
+                    sh 'pytest'
                 }
             }
         }
@@ -62,11 +40,10 @@ pipeline {
             steps {
                 script {
                     // Log in to AWS ECR and push the image
-                    sh """
-                        #!/bin/bash
+                    sh '''
                         aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin 211125528700.dkr.ecr.us-west-2.amazonaws.com
                         docker push ${DOCKER_IMAGE}
-                    """
+                    '''
                 }
             }
         }
@@ -76,10 +53,9 @@ pipeline {
                 script {
                     // Assuming deployment involves running a Docker container
                     // Customize deployment commands as per your infrastructure
-                    sh """
-                        #!/bin/bash
+                    sh '''
                         docker run -d -p 80:5000 ${DOCKER_IMAGE}
-                    """
+                    '''
                 }
             }
         }
@@ -87,10 +63,9 @@ pipeline {
 
     post {
         always {
-            // Clean up virtual environment and Docker images after the build
+            // Clean up Docker images after the build
             script {
-                sh "rm -rf ${VENV_DIR}"
-                sh "docker rmi ${DOCKER_IMAGE}"
+                sh 'docker rmi ${DOCKER_IMAGE}'
             }
         }
         success {
