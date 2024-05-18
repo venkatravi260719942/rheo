@@ -1,5 +1,6 @@
 #!flask/bin/python
 from flask import Flask, jsonify, abort, make_response, request
+import requests  # Import the requests library
 
 app = Flask(__name__)
 
@@ -18,17 +19,22 @@ tasks = [
     }
 ]
 
+@app.route('/')
+def index():
+    return "Welcome to the Flask App"
+
+@app.route('/external-api', methods=['GET'])
+def external_api():
+    response = requests.get('https://api.example.com/data')  # Example of making a request to an external API
+    return jsonify(response.json())
 
 @app.route('/todo/api/v1.0/tasks', methods=['GET'])
 def get_tasks():
     return jsonify({'tasks': tasks})
 
-
-# this is to show error in valid formats
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Invalid Request made Not found'}), 404)
-
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['GET'])
 def get_task(task_id):
@@ -36,7 +42,6 @@ def get_task(task_id):
     if len(task) == 0:
         abort(404)
     return jsonify({'task': task[0]})
-
 
 @app.route('/todo/api/v1.0/tasks', methods=['POST'])
 def create_task():
@@ -51,7 +56,6 @@ def create_task():
     }
     tasks.append(task)
     return jsonify({'task': task}), 201
-
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
@@ -71,7 +75,6 @@ def update_task(task_id):
     task[0]['done'] = request.json.get('done', task[0]['done'])
     return jsonify({'task': task[0]})
 
-
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
     task = [task for task in tasks if task['id'] == task_id]
@@ -80,6 +83,5 @@ def delete_task(task_id):
     tasks.remove(task[0])
     return jsonify({'result': True})
 
-
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0",port=5000)
+    app.run(debug=True, host="0.0.0.0", port=80)
