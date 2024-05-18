@@ -5,21 +5,25 @@ pipeline {
 
     environment {
         VENV_DIR = 'venv'
-        DOCKER_IMAGE = '211125528700.dkr.ecr.us-west-2.amazonaws.com/rheo-flask-app:latest'
+        DOCKER_IMAGE = '211125528700.dkr.ecr.us-west-2.amazonaws.com/your-flask-app:latest'
         AWS_REGION = 'us-west-2'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/venkatravi260719942/rheo'
+                script {
+                    git credentialsId: 'github', url: 'https://github.com/ishaileshmishra/todo-api-flask.git'
+                }
             }
         }
 
         stage('Setup Python Environment') {
             steps {
                 script {
+                    // Create virtual environment
                     sh "python3 -m venv ${VENV_DIR}"
+                    // Activate virtual environment and install dependencies
                     sh """
                         source ${VENV_DIR}/bin/activate
                         pip install --upgrade pip
@@ -32,8 +36,10 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
+                    // Activate virtual environment and run tests
                     sh """
                         source ${VENV_DIR}/bin/activate
+                        # Assuming you have tests configured with pytest
                         pytest
                     """
                 }
@@ -43,6 +49,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+                    // Build the Docker image
                     sh "docker build -t ${DOCKER_IMAGE} ."
                 }
             }
@@ -51,6 +58,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
+                    // Log in to AWS ECR and push the image
                     sh """
                         aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin 211125528700.dkr.ecr.us-west-2.amazonaws.com
                         docker push ${DOCKER_IMAGE}
@@ -62,7 +70,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh "docker run -d -p 80:5000 ${DOCKER_IMAGE}"
+                    // Assuming deployment involves running a Docker container
+                    // Customize deployment commands as per your infrastructure
+                    sh """
+                        docker run -d -p 80:5000 ${DOCKER_IMAGE}
+                    """
                 }
             }
         }
@@ -70,6 +82,7 @@ pipeline {
 
     post {
         always {
+            // Clean up virtual environment and Docker images after the build
             script {
                 sh "rm -rf ${VENV_DIR}"
                 sh "docker rmi ${DOCKER_IMAGE}"
