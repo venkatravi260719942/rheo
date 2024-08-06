@@ -13,8 +13,11 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+                    // Define Docker image name
+                    def dockerImage = "${DOCKER_REPO}:${BUILD_NUMBER}"
+                    
                     // Build the Docker image
-                    sh "docker build -t $DOCKER_REPO:$BUILD_NUMBER ."
+                    sh "docker build -t ${dockerImage} ."
                 }
             }
         }
@@ -25,7 +28,7 @@ pipeline {
                     // Log in to the Docker registry
                     sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
                     // Push the Docker image to the registry
-                    sh "docker push $DOCKER_REPO:$BUILD_NUMBER"
+                    sh "docker push ${dockerImage}"
                 }
             }
         }
@@ -37,10 +40,10 @@ pipeline {
                         sh """
                             docker exec -it -u root $TARGET_CONTAINER_NAME bash -c "
                             echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin && 
-                            docker pull ${DOCKER_IMAGE} && 
+                            docker pull ${dockerImage} && 
                             docker stop rheo-flask-app || true && 
                             docker rm rheo-flask-app || true && 
-                            docker run -d --name rheo-flask-app -p 80:80 ${DOCKER_IMAGE}
+                            docker run -d --name rheo-flask-app -p 80:80 ${dockerImage}
                         "
                         """
                     }
@@ -53,7 +56,7 @@ pipeline {
         always {
             script {
                 // Clean up Docker images on Jenkins agent after the build
-                sh "docker rmi ${DOCKER_IMAGE}"
+                sh "docker rmi ${dockerImage}"
             }
         }
         success {
