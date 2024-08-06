@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'agent-1' }  // Use agent-1 for this pipeline
 
     environment {
        // Define Docker Hub credentials
