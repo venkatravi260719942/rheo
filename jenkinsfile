@@ -10,9 +10,18 @@ pipeline {
         SONAR_HOST_URL = 'http://172.18.0.2:9000'
         SONAR_AUTH_TOKEN = 'sqa_d13d3afbf4f5dedf503f8d0bab97f0e79d5a1317'
         SONAR_PROJECT_KEY = 'Test'
+        SONAR_SCANNER_HOME = '/opt/sonar-scanner-6.1.0.4477-linux-x64'
+        PATH = "${env.PATH}:${env.SONAR_SCANNER_HOME}/bin"
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                // Checkout your code
+             checkout scm
+            }
+        }
+    
         stage('Build Docker Image') {
             steps {
                 script {
