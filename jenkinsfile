@@ -27,16 +27,11 @@ pipeline {
                 script {
                     // Run SonarQube analysis
                     sh """
-                    docker run --rm \
-                        -e SONAR_HOST_URL=${SONAR_HOST_URL} \
-                        -e SONAR_LOGIN=${SONAR_AUTH_TOKEN} \
-                        -v ${pwd()}:/usr/src \
-                        sonarsource/sonar-scanner-cli \
-                        sonar-scanner \
+                    sonar-scanner \
                         -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                        -Dsonar.sources=./ \
-                        -Dsonar.exclusions=**/tests/** \
-                        -Dsonar.java.binaries=./target/classes
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=${SONAR_HOST_URL} \
+                        -Dsonar.login=${SONAR_AUTH_TOKEN}
                     """
                 }
             }
