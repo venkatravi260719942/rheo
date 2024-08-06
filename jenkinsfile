@@ -1,23 +1,43 @@
 pipeline {
-    agent { label 'agent-1' }  // Use agent-1 for this pipeline
+    agent { label 'agent-1' }
 
     environment {
-       // Define Docker Hub credentials
-       DOCKER_USERNAME = 'venkatravi26071994'
-       DOCKER_PASSWORD = 'dckr_pat_JTrli2BddxJ6px99ia7M8j0z7K8'
-       DOCKER_REPO = 'venkatravi26071994/pythontest'
-       TARGET_CONTAINER_NAME = 'target_vm'
+        DOCKER_USERNAME = 'venkatravi26071994'
+        DOCKER_PASSWORD = 'dckr_pat_JTrli2BddxJ6px99ia7M8j0z7K8'
+        DOCKER_REPO = 'venkatravi26071994/pythontest'
+        TARGET_CONTAINER_NAME = 'target_vm'
+        // SonarQube environment variables
+        SONAR_HOST_URL = 'http://172.18.0.2:9000'
+        SONAR_AUTH_TOKEN = 'sqa_d13d3afbf4f5dedf503f8d0bab97f0e79d5a1317'
+        SONAR_PROJECT_KEY = 'your_project_key'
     }
 
     stages {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Define Docker image name
                     def dockerImage = "${DOCKER_REPO}:${BUILD_NUMBER}"
-                    
-                    // Build the Docker image
                     sh "docker build -t ${dockerImage} ."
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    // Run SonarQube analysis
+                    sh """
+                    docker run --rm \
+                        -e SONAR_HOST_URL=${SONAR_HOST_URL} \
+                        -e SONAR_LOGIN=${SONAR_AUTH_TOKEN} \
+                        -v ${pwd()}:/usr/src \
+                        sonarsource/sonar-scanner-cli \
+                        sonar-scanner \
+                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                        -Dsonar.sources=./ \
+                        -Dsonar.exclusions=**/tests/** \
+                        -Dsonar.java.binaries=./target/classes
+                    """
                 }
             }
         }
@@ -25,10 +45,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    // Define Docker image name
                     def dockerImage = "${DOCKER_REPO}:${BUILD_NUMBER}"
-                    
-                    // Log in to the Docker registry and push the Docker image
                     sh """
                     echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
                     docker push ${dockerImage}
@@ -40,10 +57,7 @@ pipeline {
         stage('Deploy to Target VM') {
             steps {
                 script {
-                    // Define Docker image name
                     def dockerImage = "${DOCKER_REPO}:${BUILD_NUMBER}"
-                    
-                    // Deploy the Docker image to the target container
                     sh """
                     docker exec $TARGET_CONTAINER_NAME bash -c "
                     echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin &&
@@ -55,15 +69,11 @@ pipeline {
             }
         }
     }
-                //    docker stop rheo-flask-app || true &&
-                //    docker rm rheo-flask-app || true &&
+
     post {
         always {
             script {
-                // Define Docker image name
                 def dockerImage = "${DOCKER_REPO}:${BUILD_NUMBER}"
-                
-                // Clean up Docker images on Jenkins agent after the build
                 sh "docker ps -a | grep -i ${dockerImage}"
             }
         }
