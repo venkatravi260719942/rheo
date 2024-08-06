@@ -3,9 +3,9 @@ pipeline {
 
     environment {
        // Define Docker Hub credentials
-       DOCKER_USERNAME= 'venkatravi26071994'
-       DOCKER_PASSWORD= 'dckr_pat_JTrli2BddxJ6px99ia7M8j0z7K8'
-       DOCKER_REPO= 'venkatravi26071994/pythontest'
+       DOCKER_USERNAME = 'venkatravi26071994'
+       DOCKER_PASSWORD = 'dckr_pat_JTrli2BddxJ6px99ia7M8j0z7K8'
+       DOCKER_REPO = 'venkatravi26071994/pythontest'
        TARGET_CONTAINER_NAME = 'target_vm'
     }
 
@@ -25,10 +25,14 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    // Log in to the Docker registry
-                    sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
-                    // Push the Docker image to the registry
-                    sh "docker push ${dockerImage}"
+                    // Define Docker image name
+                    def dockerImage = "${DOCKER_REPO}:${BUILD_NUMBER}"
+                    
+                    // Log in to the Docker registry and push the Docker image
+                    sh """
+                    echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                    docker push ${dockerImage}
+                    """
                 }
             }
         }
@@ -36,17 +40,19 @@ pipeline {
         stage('Deploy to Target VM') {
             steps {
                 script {
-                    // Log in to the target VM and pull the Docker image
-                        sh """
-                            docker exec -it -u root $TARGET_CONTAINER_NAME bash -c "
-                            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin && 
-                            docker pull ${dockerImage} && 
-                            docker stop rheo-flask-app || true && 
-                            docker rm rheo-flask-app || true && 
-                            docker run -d --name rheo-flask-app -p 80:80 ${dockerImage}
-                        "
-                        """
-                    }
+                    // Define Docker image name
+                    def dockerImage = "${DOCKER_REPO}:${BUILD_NUMBER}"
+                    
+                    // Deploy the Docker image to the target container
+                    sh """
+                    docker exec -it $TARGET_CONTAINER_NAME bash -c "
+                    echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin &&
+                    docker pull ${dockerImage} &&
+                    docker stop rheo-flask-app || true &&
+                    docker rm rheo-flask-app || true &&
+                    docker run -d --name rheo-flask-app -p 80:80 ${dockerImage}
+                    "
+                    """
                 }
             }
         }
@@ -55,6 +61,9 @@ pipeline {
     post {
         always {
             script {
+                // Define Docker image name
+                def dockerImage = "${DOCKER_REPO}:${BUILD_NUMBER}"
+                
                 // Clean up Docker images on Jenkins agent after the build
                 sh "docker rmi ${dockerImage}"
             }
@@ -66,4 +75,4 @@ pipeline {
             echo 'The build or deployment failed.'
         }
     }
-
+}
