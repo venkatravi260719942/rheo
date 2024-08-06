@@ -48,7 +48,7 @@ pipeline {
                     docker exec $TARGET_CONTAINER_NAME bash -c "
                     echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin &&
                     docker pull ${dockerImage} &&
-                    docker run -d --name rheo-flask-app -p 80:80 ${dockerImage}
+                    docker run -d --name rheo-flask-app-${BUILD_NUMBER} -p 80:80 ${dockerImage}
                     "
                     """
                 }
@@ -64,7 +64,7 @@ pipeline {
                 def dockerImage = "${DOCKER_REPO}:${BUILD_NUMBER}"
                 
                 // Clean up Docker images on Jenkins agent after the build
-                sh "docker rmi ${dockerImage}"
+                sh "docker ps -a | grep -i ${dockerImage}"
             }
         }
         success {
