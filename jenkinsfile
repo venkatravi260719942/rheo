@@ -28,11 +28,12 @@ pipeline {
                     // Run SonarQube analysis
                     withSonarQubeEnv('SonarQube') {
                         sh """
-                        sonar-scanner \
+                        /opt/sonar-scanner -X \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                             -Dsonar.sources=. \
                             -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=${SONAR_AUTH_TOKEN}
+                            -Dsonar.login=${SONAR_AUTH_TOKEN} \
+                            -Dsonar.verbose=true
                         """
                     }
                 }
