@@ -12,7 +12,7 @@ pipeline {
         SONAR_PROJECT_KEY = 'Test'
     }
     tools {
-        sonarQubeScanner 'SonarQube Scanner 4.8.0'  // Name configured in Global Tool Configuration
+        sonarQubeScanner 'SonarQube'  // Name configured in Global Tool Configuration
     }
 
     stages {
@@ -29,7 +29,7 @@ pipeline {
             steps {
                 script {
                     // Run SonarQube analysis
-                    withSonarQubeEnv('SonarQube Scanner 4.8.0') {
+                    withSonarQubeEnv('SonarQube') {
                         sh """
                         sonar-scanner \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
