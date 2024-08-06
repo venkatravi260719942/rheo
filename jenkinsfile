@@ -10,9 +10,9 @@ pipeline {
         SONAR_HOST_URL = 'http://172.18.0.2:9000'
         SONAR_AUTH_TOKEN = 'sqa_d13d3afbf4f5dedf503f8d0bab97f0e79d5a1317'
         SONAR_PROJECT_KEY = 'Test'
-                // Add SonarScanner to PATH
-        JAVA_HOME = '/opt/java/openjdk'
-        PATH = "${PATH}:/opt/sonar-scanner/bin"
+    }
+    tools {
+        sonarQubeScanner 'SonarQube Scanner 4.8.0'  // Name configured in Global Tool Configuration
     }
 
     stages {
@@ -29,13 +29,15 @@ pipeline {
             steps {
                 script {
                     // Run SonarQube analysis
-                    sh """
-                    sonar-scanner \
-                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=${SONAR_HOST_URL} \
-                        -Dsonar.login=${SONAR_AUTH_TOKEN}
-                    """
+                    withSonarQubeEnv('SonarQube Scanner 4.8.0') {
+                        sh """
+                        sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                            -Dsonar.login=${SONAR_AUTH_TOKEN}
+                        """
+                    }
                 }
             }
         }
