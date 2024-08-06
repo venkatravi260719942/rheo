@@ -11,9 +11,6 @@ pipeline {
         SONAR_AUTH_TOKEN = 'sqa_d13d3afbf4f5dedf503f8d0bab97f0e79d5a1317'
         SONAR_PROJECT_KEY = 'Test'
     }
-    tools {
-        sonarQubeScanner 'SonarQube'  // Name configured in Global Tool Configuration
-    }
 
     stages {
         stage('Build Docker Image') {
