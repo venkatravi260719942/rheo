@@ -9,7 +9,7 @@ pipeline {
         // SonarQube environment variables
         SONAR_HOST_URL = 'http://172.18.0.2:9000'
         SONAR_AUTH_TOKEN = 'sqa_d13d3afbf4f5dedf503f8d0bab97f0e79d5a1317'
-        SONAR_PROJECT_KEY = 'your_project_key'
+        SONAR_PROJECT_KEY = 'test'
     }
 
     stages {
