@@ -45,12 +45,12 @@ pipeline {
                     
                     // Deploy the Docker image to the target container
                     sh """
-                    docker exec $TARGET_CONTAINER_NAME bash -c '
+                    docker exec -it $TARGET_CONTAINER_NAME bash
                     echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin &&
                     docker pull ${dockerImage} &&
                     docker stop rheo-flask-app || true &&
                     docker rm rheo-flask-app || true &&
-                    docker run -d --name rheo-flask-app -p 80:80 ${dockerImage}'
+                    docker run -d --name rheo-flask-app -p 80:80 ${dockerImage}
                     """
                 }
             }
