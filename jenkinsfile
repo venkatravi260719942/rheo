@@ -48,7 +48,7 @@ pipeline {
                     docker exec $TARGET_CONTAINER_NAME bash -c "
                     echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin &&
                     docker pull ${dockerImage} &&
-                    docker run -d --name rheo-flask-app-${BUILD_NUMBER} -p 80:80 ${dockerImage}
+                    docker run -d --name rheo-flask-app-${BUILD_NUMBER} -p 8585:8585 ${dockerImage}
                     "
                     """
                 }
