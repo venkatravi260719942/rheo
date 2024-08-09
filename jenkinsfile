@@ -64,7 +64,7 @@ pipeline {
                     docker exec $TARGET_CONTAINER_NAME bash -c "
                     echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin &&
                     docker ps -a --filter 'name=rheo-flask-app-' --format '{{.ID}}' | xargs -r docker rm -f &&
-                    docker images --filter '${imagePrefix}' --format '{{.ID}}' | xargs -r docker rmi -f &&
+                    docker images '${imagePrefix}' --format '{{.Repository}}:{{.Tag}}' | grep '${imagePrefix}' | xargs -r docker rmi -f || true &&
                     docker pull ${dockerImage} &&
                     docker run -d --name rheo-flask-app-${BUILD_NUMBER} -p 8585:8585 ${dockerImage}
                     "
