@@ -31,7 +31,7 @@ pipeline {
                     // Run SonarQube analysis
                     withSonarQubeEnv('SonarQube') {
                         sh """
-                        /opt/sonar-scanner -X \
+                        /opt/sonar-scanner-6.1.0.4477-linux-x64/bin/sonar-scanner -X \
                             -Dsonar.projectKey=Test \
                             -Dsonar.sources=. \
                             -Dsonar.host.url=http://172.18.0.2:9000 \
