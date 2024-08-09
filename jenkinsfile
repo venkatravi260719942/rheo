@@ -6,12 +6,6 @@ pipeline {
         DOCKER_PASSWORD = 'dckr_pat_JTrli2BddxJ6px99ia7M8j0z7K8'
         DOCKER_REPO = 'venkatravi26071994/pythontest'
         TARGET_CONTAINER_NAME = 'target_vm'
-        // SonarQube environment variables
-        SONAR_HOST_URL = 'http://172.18.0.2:9000'
-        SONAR_AUTH_TOKEN = 'sqa_d13d3afbf4f5dedf503f8d0bab97f0e79d5a1317'
-        SONAR_PROJECT_KEY = 'Test'
-        SONAR_SCANNER_HOME = '/opt/sonar-scanner-6.1.0.4477-linux-x64'
-        PATH = "${env.PATH}:${env.SONAR_SCANNER_HOME}/bin"
     }
 
     stages {
@@ -38,10 +32,10 @@ pipeline {
                     withSonarQubeEnv('SonarQube') {
                         sh """
                         /opt/sonar-scanner -X \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.projectKey=Test \
                             -Dsonar.sources=. \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=${SONAR_AUTH_TOKEN} \
+                            -Dsonar.host.url=http://172.18.0.2:9000 \
+                            -Dsonar.login=sqa_d13d3afbf4f5dedf503f8d0bab97f0e79d5a1317 \
                             -Dsonar.verbose=true
                         """
                     }
